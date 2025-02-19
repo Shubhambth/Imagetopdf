@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Image to PDF Converter</title>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md p-4">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <a href="#" class="text-xl font-bold text-gray-700">Image to PDF</a>
+            <button class="md:hidden text-gray-600" id="menu-toggle">☰</button>
+            <ul class="hidden md:flex space-x-6" id="menu">
+                <li><a href="#" class="text-gray-600 hover:text-blue-500">Home</a></li>
+                <li><a href="#features" class="text-gray-600 hover:text-blue-500">Features</a></li>
+                <li><a href="#how-to-use" class="text-gray-600 hover:text-blue-500">How to Use</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-4 text-center">Image to PDF Converter</h2>
+            <form method="post" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+
+                <!-- Drag & Drop Container -->
+                <div id="dropArea" class="flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-100 hover:bg-gray-200 cursor-pointer transition">
+                    <p class="text-gray-600 text-center">Drag & Drop Images Here</p>
+                    <p class="text-gray-400 text-sm text-center">or click to select files</p>
+                    <input type="file" name="images" id="imageInput" multiple class="hidden">
+                </div>
+
+                <!-- Image Preview Container -->
+                <div id="previewContainer" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4"></div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
+                    Convert to PDF
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <section id="features" class="bg-gray-200 py-12 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-bold text-gray-700">Features</h2>
+            <p class="text-gray-600 mt-2">Why use our Image to PDF Converter?</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold">Drag & Drop</h3>
+                    <p class="text-gray-500 mt-2">Easily upload images by dragging them into the box.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold">Multiple Files</h3>
+                    <p class="text-gray-500 mt-2">Upload multiple images at once and combine them into a PDF.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold">Preview & Remove</h3>
+                    <p class="text-gray-500 mt-2">See a preview and remove images before converting.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="bg-gray-200 py-12 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-bold text-gray-700">How to Use</h2>
+            <p class="text-gray-600 mt-2">Why use our Image to PDF Converter?</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold">Step 1</h3>
+                    <p class="text-gray-500 mt-2">Upload images by clicking or dragging files into the upload area.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold">Step 2</h3>
+                    <p class="text-gray-500 mt-2">Preview your images, rearrange or remove any if necessary.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold">Step 3</h3>
+                    <p class="text-gray-500 mt-2">Click "Convert to PDF" and download your file!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+
+    <!-- JavaScript for Mobile Menu & File Handling -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let menuToggle = document.getElementById("menu-toggle");
+        let menu = document.getElementById("menu");
+
+        menuToggle.addEventListener("click", function () {
+            menu.classList.toggle("hidden");
+        });
+
+        let dropArea = document.getElementById("dropArea");
+        let fileInput = document.getElementById("imageInput");
+        let previewContainer = document.getElementById("previewContainer");
+        let selectedFiles = [];
+
+        dropArea.addEventListener("click", function () {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener("change", function (event) {
+            handleFiles(event.target.files);
+        });
+
+        ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
+            dropArea.addEventListener(eventName, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        dropArea.addEventListener("drop", function (event) {
+            let files = event.dataTransfer.files;
+            handleFiles(files);
+        });
+
+        function handleFiles(files) {
+            for (let i = 0; i < files.length; i++) {
+                let file = files[i];
+                let reader = new FileReader();
+
+                reader.onload = function (e) {
+                    let imgContainer = document.createElement("div");
+                    imgContainer.className = "relative";
+
+                    let imgElement = document.createElement("img");
+                    imgElement.src = e.target.result;
+                    imgElement.className = "w-20 h-20 object-cover rounded-lg shadow-md";
+
+                    let removeBtn = document.createElement("button");
+                    removeBtn.innerText = "×";
+                    removeBtn.className = "absolute top-0 right-0 bg-red-500 text-white text-xs p-1 rounded-full";
+                    removeBtn.addEventListener("click", function () {
+                        imgContainer.remove();
+                        selectedFiles = selectedFiles.filter(f => f !== file);
+                        updateFileInput();
+                    });
+
+                    imgContainer.appendChild(imgElement);
+                    imgContainer.appendChild(removeBtn);
+                    previewContainer.appendChild(imgContainer);
+                    selectedFiles.push(file);
+                };
+
+                reader.readAsDataURL(file);
+            }
+            updateFileInput();
+        }
+
+        function updateFileInput() {
+            let dataTransfer = new DataTransfer();
+            selectedFiles.forEach(file => dataTransfer.items.add(file));
+            fileInput.files = dataTransfer.files;
+        }
+    });
+    </script>
+</body>
+</html>
